@@ -1,7 +1,6 @@
 package com.example.LibraryManagement.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,7 +11,6 @@ import com.example.LibraryManagement.entity.Author;
 import com.example.LibraryManagement.exception.AuthorNotFoundException;
 import com.example.LibraryManagement.mapper.AuthorMapper;
 import com.example.LibraryManagement.repository.AuthorRepo;
-
 
 @Service
 public class AuthorService {
@@ -47,19 +45,23 @@ public class AuthorService {
         authorRepo.deleteById(authorId);
     }
 
-    // update
+    @Transactional(readOnly = true)
+    public AuthorResponse getAuthorById(Long id) {
+        Author author = authorRepo.findById(id)
+                .orElseThrow(() -> new AuthorNotFoundException(id));
+
+        return AuthorMapper.toResponse(author);
+    }
+
     @Transactional
     public AuthorResponse updateAuthor(Long id, AuthorRequest request) {
-
         Author author = authorRepo.findById(id)
                 .orElseThrow(() -> new AuthorNotFoundException(id));
 
         author.setName(request.getName());
         author.setNationality(request.getNationality());
 
-        Author updatedAuthor = authorRepo.save(author);
-
-        return AuthorMapper.toResponse(updatedAuthor);
+        return AuthorMapper.toResponse(author);
     }
 
 }
