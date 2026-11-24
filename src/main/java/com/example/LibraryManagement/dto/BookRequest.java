@@ -1,15 +1,29 @@
 package com.example.LibraryManagement.dto;
 
 import java.util.Set;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
+
 import java.util.HashSet;
 
 public class BookRequest {
 
+    @NotBlank
+    @Size(max = 200)
     private String title;
+    @NotBlank
     private String isbn;
+    @NotNull
+    @Positive
     private Integer publicationYear;
+    @NotNull
+    @Positive
     private Long authorId;
-    private Set<Long> categoryIds = new HashSet<>();
+
+    private Set<@NotNull @Positive Long> categoryIds = new HashSet<>();
 
     public BookRequest() {
     }
