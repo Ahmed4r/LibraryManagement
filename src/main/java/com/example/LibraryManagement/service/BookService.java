@@ -1,6 +1,7 @@
 package com.example.LibraryManagement.service;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,21 +10,30 @@ import com.example.LibraryManagement.dto.BookRequest;
 import com.example.LibraryManagement.dto.BookResponse;
 import com.example.LibraryManagement.entity.Author;
 import com.example.LibraryManagement.entity.Book;
+import com.example.LibraryManagement.entity.Category;
 import com.example.LibraryManagement.exception.AuthorNotFoundException;
 import com.example.LibraryManagement.exception.BookNotFoundException;
+import com.example.LibraryManagement.exception.CategoryNotFoundException;
 import com.example.LibraryManagement.mapper.BookMapper;
 import com.example.LibraryManagement.repository.AuthorRepo;
 import com.example.LibraryManagement.repository.BookRepo;
-
+import com.example.LibraryManagement.repository.CategoryRepo;
 
 @Service
 public class BookService {
+
     private final BookRepo bookRepo;
     private final AuthorRepo authorRepo;
+    private final CategoryRepo categoryRepo;
 
-    public BookService(BookRepo bookRepo, AuthorRepo authorRepo) {
+    public BookService(
+            BookRepo bookRepo,
+            AuthorRepo authorRepo,
+            CategoryRepo categoryRepo) {
+
         this.bookRepo = bookRepo;
         this.authorRepo = authorRepo;
+        this.categoryRepo = categoryRepo;
     }
 
     @Transactional
@@ -33,6 +43,8 @@ public class BookService {
                 .orElseThrow(() -> new AuthorNotFoundException(request.getAuthorId()));
 
         Book book = BookMapper.toEntity(request, author);
+
+        assignCategories(book, request.getCategoryIds());
 
         Book savedBook = bookRepo.save(book);
 
@@ -49,6 +61,7 @@ public class BookService {
 
     @Transactional(readOnly = true)
     public BookResponse getBookById(Long bookId) {
+
         Book book = bookRepo.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException(bookId));
 
@@ -57,8 +70,13 @@ public class BookService {
 
     @Transactional
     public void removeBook(Long bookId) {
+
         Book book = bookRepo.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException(bookId));
+
+        for (Category category : List.copyOf(book.getCategories())) {
+            book.removeCategory(category);
+        }
 
         bookRepo.delete(book);
     }
@@ -77,7 +95,27 @@ public class BookService {
         book.setPublicationYear(request.getPublicationYear());
         book.setAuthor(author);
 
+        for (Category category : List.copyOf(book.getCategories())) {
+            book.removeCategory(category);
+        }
+
+        assignCategories(book, request.getCategoryIds());
+
         return BookMapper.toResponse(book);
     }
 
+    private void assignCategories(Book book, Set<Long> categoryIds) {
+
+        if (categoryIds == null) {
+            return;
+        }
+
+        for (Long categoryId : categoryIds) {
+
+            Category category = categoryRepo.findById(categoryId)
+                    .orElseThrow(() -> new CategoryNotFoundException(categoryId));
+
+            book.addCategory(category);
+        }
+    }
 }

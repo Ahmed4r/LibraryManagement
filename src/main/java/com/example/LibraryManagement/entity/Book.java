@@ -1,41 +1,38 @@
 package com.example.LibraryManagement.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import java.util.HashSet;
+import java.util.Set;
+
+import jakarta.persistence.*;
 
 @Entity
 public class Book {
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String isbn;
     private Integer publicationYear;
     private String title;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "author_id")
     private Author author;
 
-    public Book(String isbn, Integer publicationYear, String title, Author author) {
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "book_categories", joinColumns = @JoinColumn(name = "book_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
+    private Set<Category> categories = new HashSet<>();
+
+    public Book() {
+    }
+
+    public Book(String isbn, Integer publicationYear,
+            String title, Author author) {
         this.isbn = isbn;
         this.publicationYear = publicationYear;
         this.title = title;
         this.author = author;
-    }
-
-    public Author getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(Author author) {
-        this.author = author;
-    }
-
-    public Book() {
     }
 
     public Long getId() {
@@ -68,5 +65,31 @@ public class Book {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public Author getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(Author author) {
+        this.author = author;
+    }
+
+    public Set<Category> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(Set<Category> categories) {
+        this.categories = categories;
+    }
+
+    public void addCategory(Category category) {
+        categories.add(category);
+        category.getBooks().add(this);
+    }
+
+    public void removeCategory(Category category) {
+        categories.remove(category);
+        category.getBooks().remove(this);
     }
 }

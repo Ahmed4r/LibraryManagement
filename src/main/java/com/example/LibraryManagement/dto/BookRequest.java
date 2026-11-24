@@ -1,11 +1,15 @@
 package com.example.LibraryManagement.dto;
 
+import java.util.Set;
+import java.util.HashSet;
+
 public class BookRequest {
 
     private String title;
     private String isbn;
     private Integer publicationYear;
     private Long authorId;
+    private Set<Long> categoryIds = new HashSet<>();
 
     public BookRequest() {
     }
@@ -40,5 +44,13 @@ public class BookRequest {
 
     public void setPublicationYear(Integer publicationYear) {
         this.publicationYear = publicationYear;
+    }
+
+    public Set<Long> getCategoryIds() {
+        return categoryIds;
+    }
+
+    public void setCategoryIds(Set<Long> categoryIds) {
+        this.categoryIds = categoryIds;
     }
 }
