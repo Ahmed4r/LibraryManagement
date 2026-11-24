@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.LibraryManagement.dto.BookRequest;
 import com.example.LibraryManagement.dto.BookResponse;
+import com.example.LibraryManagement.dto.BookSummary;
 import com.example.LibraryManagement.service.BookService;
 
 import jakarta.validation.Valid;
@@ -60,4 +61,20 @@ public class BookController {
 
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<BookResponse>> searchBooks(@RequestParam String title) {
+        return ResponseEntity.ok(bookService.searchByTitle(title));
+    }
+
+    @GetMapping("/summaries")
+    public ResponseEntity<List<BookSummary>> getBookSummaries() {
+        return ResponseEntity.ok(bookService.getBookSummaries());
+    }
+
+    @GetMapping("/optimized")
+    public ResponseEntity<List<BookResponse>> getOptimizedBooks() {
+        return ResponseEntity.ok(bookService.getAllBooksOptimized());
+    }
+
 }

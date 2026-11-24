@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.LibraryManagement.dto.BookRequest;
 import com.example.LibraryManagement.dto.BookResponse;
+import com.example.LibraryManagement.dto.BookSummary;
 import com.example.LibraryManagement.entity.Author;
 import com.example.LibraryManagement.entity.Book;
 import com.example.LibraryManagement.entity.Category;
@@ -117,5 +118,26 @@ public class BookService {
 
             book.addCategory(category);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookResponse> searchByTitle(String title) {
+        return bookRepo.findByTitleContainingIgnoreCase(title)
+                .stream()
+                .map(BookMapper::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookSummary> getBookSummaries() {
+        return bookRepo.findAllBookSummaries();
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookResponse> getAllBooksOptimized() {
+        return bookRepo.findAllWithDetails()
+                .stream()
+                .map(BookMapper::toResponse)
+                .toList();
     }
 }
