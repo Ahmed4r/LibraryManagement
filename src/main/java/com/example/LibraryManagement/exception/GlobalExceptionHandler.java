@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.example.LibraryManagement.dto.ErrorResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -47,6 +48,34 @@ public class GlobalExceptionHandler {
                 ErrorResponse error = new ErrorResponse(
                                 HttpStatus.BAD_REQUEST.value(),
                                 String.join(", ", errors),
+                                LocalDateTime.now(),
+                                request.getRequestURI());
+
+                return ResponseEntity.badRequest().body(error);
+        }
+
+        @ExceptionHandler(IllegalArgumentException.class)
+        public ResponseEntity<ErrorResponse> handleInvalidException(
+                        IllegalArgumentException ex,
+                        HttpServletRequest request) {
+
+                ErrorResponse error = new ErrorResponse(
+                                HttpStatus.BAD_REQUEST.value(),
+                                ex.getMessage(),
+                                LocalDateTime.now(),
+                                request.getRequestURI());
+                return ResponseEntity.badRequest().body(error);
+
+        }
+
+        @ExceptionHandler(ConstraintViolationException.class)
+        public ResponseEntity<ErrorResponse> handleConstraintViolation(
+                        ConstraintViolationException ex,
+                        HttpServletRequest request) {
+
+                ErrorResponse error = new ErrorResponse(
+                                HttpStatus.BAD_REQUEST.value(),
+                                ex.getMessage(),
                                 LocalDateTime.now(),
                                 request.getRequestURI());
 

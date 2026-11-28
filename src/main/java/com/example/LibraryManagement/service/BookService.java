@@ -3,6 +3,10 @@ package com.example.LibraryManagement.service;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +23,7 @@ import com.example.LibraryManagement.mapper.BookMapper;
 import com.example.LibraryManagement.repository.AuthorRepo;
 import com.example.LibraryManagement.repository.BookRepo;
 import com.example.LibraryManagement.repository.CategoryRepo;
+import com.example.LibraryManagement.specification.BookSpecification;
 
 @Service
 public class BookService {
@@ -50,14 +55,31 @@ public class BookService {
         Book savedBook = bookRepo.save(book);
 
         return BookMapper.toResponse(savedBook);
+
     }
 
     @Transactional(readOnly = true)
     public List<BookResponse> getAllBooks() {
-        return bookRepo.findAll()
-                .stream()
-                .map(BookMapper::toResponse)
-                .toList();
+
+        return bookRepo.findAll().stream().map(BookMapper::toResponse).toList();
+
+    }
+
+    @Transactional(readOnly = true)
+    public Page<BookResponse> searchBooks(String title, int pageNumber, int pageSize, String sortBy, String direction) {
+        if ("title".equals(sortBy) || "isbn".equals(sortBy) || "publicationYear".equals(sortBy)) {
+            Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
+            Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+            return bookRepo.findByTitleContainingIgnoreCase(title, pageable).map(BookMapper::toResponse);
+        }
+        throw new IllegalArgumentException(
+                "Invalid sortBy. Allowed values: title, isbn, publicationYear.");
+    }
+
+    public Page<BookResponse> filterBooks(String title, Integer year, int pageNumber, int pageSize) {
+        BookSpecification specs = new BookSpecification();
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        return bookRepo.findAll(specs.hasTitleAndYear(title, year), pageable).map(BookMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
@@ -140,4 +162,5 @@ public class BookService {
                 .map(BookMapper::toResponse)
                 .toList();
     }
+
 }
